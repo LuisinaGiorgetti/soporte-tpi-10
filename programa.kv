@@ -1,0 +1,418 @@
+#: import ThreeLineListItem kivymd.uix.list.ThreeLineListItem
+#: import MDIconButton kivymd.uix.button.MDIconButton
+
+
+<Volumen@MDSlider>
+    min: 0
+    max: 100
+    value: 40
+    pos_hint: {'center_x': 0.5, 'center_y':0.18}
+    size_hint: (0.8,0.8)
+
+<BotonLeer@MDIconButton>
+    icon: 'plus-circle-outline'
+    user_font_size: 80
+    theme_text_color: "Custom"
+    text_color: app.theme_cls.primary_color
+    on_release:
+        app.abrir_pag_leer()
+
+
+
+<Audio>
+    on_parent: root.reproducir_libro
+    BoxLayout:
+        MDIconButton:
+            icon: 'volume-off'
+            theme_text_color: "Custom"
+            text_color: 46/255, 49/255, 49/255, 0.8
+            pos_hint: {'center_x': 0.1, 'center_y':0.18}
+            on_release:
+                root.mutear_audio()
+        Volumen:
+            id: volumen
+            value: 50
+            on_touch_up: root.volumen_slider()
+            on_touch_move: root.volumen_slider()
+        MDIconButton:
+            icon: 'volume-high'
+            theme_text_color: "Custom"
+            text_color: 46/255, 49/255, 49/255, 0.8
+            pos_hint: {'center_x': 0.9, 'center_y':0.18}
+            on_press:
+                root.subir_volumen_audio()
+    MDRelativeLayout:
+
+        MDIconButton:
+            id: boton_reproductor
+            icon: 'play-circle-outline'
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.primary_color
+            pos_hint: {'center_x': 0.3, 'center_y':0.08}
+            user_font_size: 60
+            on_release: root.cambiar_icono()
+        MDIconButton:
+            id: boton_stop
+            icon: 'stop-circle'
+            theme_text_color: "Custom"
+            text_color: app.theme_cls.accent_color
+            pos_hint: {'center_x': 0.7, 'center_y':0.08}
+            user_font_size: 60
+            on_release: root.mostrar_advertencia()
+
+<ItemDrawer>:
+    theme_text_color: "Custom"
+    on_release: self.parent.set_color_item(self)
+    IconLeftWidget:
+        id: icon
+        icon: root.icon
+        theme_text_color: "Custom"
+        text_color: root.text_color
+
+<ContentNavigationDrawer>:
+    orientation: "vertical"
+    padding: "8dp"
+    spacing: "8dp"
+
+    ScrollView:
+        DrawerList:
+            id: md_list
+            ItemDrawer:
+                text: "Inicio"
+                icon: 'home'
+                on_release:
+                    root.nav_drawer.set_state("close")
+                    root.screen_manager.current = "inicio"
+
+            ItemDrawer:
+                text: "Archivos"
+                icon: "folder-open-outline"
+                on_release:
+                    root.nav_drawer.set_state("close")
+                    root.screen_manager.current = "archivos"
+
+            ItemDrawer:
+                text: "Borrar"
+                icon: "trash-can"
+                on_release:
+                    root.nav_drawer.set_state("close")
+                    root.screen_manager.current = "borrar"
+                    app.abrir_ventana_borrar()
+
+<AgregadosRecientes>
+    ScreenManager:
+        id: sm_recientes
+        on_parent:
+            root.buscar_libros_recientes()
+
+        MDScreen:
+            name: 'sin-libros'
+            MDLabel:
+                text: '¡No se han añadido libros\n en los últimos 15 días!'
+                pos_hint: {"center_x": .5, "center_y": .75}
+                color: 46/255, 49/255, 49/255, 0.95
+                halign: 'center'
+                font_size: 23
+            MDLabel:
+                text: 'Presione el ícono para agregar uno'
+                color: 46/255, 49/255, 49/255, 0.5
+                pos_hint: {"center_x": .5, "center_y": .6}
+                halign: 'center'
+                font_size: 16
+            BotonLeer:
+                pos_hint: {"center_x": .5, "center_y": .4}
+
+        MDScreen:
+            name: 'libros-recientes'
+            ScrollView:
+                MDList:
+                    id: lista_recientes
+                    icon_pos: [230,20]
+
+<LibrosDescargados>
+    ScreenManager:
+        id: sm_descargados
+        on_parent:
+            root.buscar_libros_descargados()
+        MDScreen:
+            name: 'libros-descargados'
+            ScrollView:
+                MDList:
+                    id: lista_descargados
+                    icon_pos: [230,20]
+        MDScreen:
+            name: 'vacio'
+            MDLabel:
+                text: '¡No tiene libros!'
+                pos_hint: {"center_x": .5, "center_y": .75}
+                color: 46/255, 49/255, 49/255, 0.95
+                halign: 'center'
+                font_size: 23
+            MDLabel:
+                text: 'Presione el ícono para agregar uno'
+                color: 46/255, 49/255, 49/255, 0.5
+                pos_hint: {"center_x": .5, "center_y": .6}
+                halign: 'center'
+                font_size: 16
+            BotonLeer:
+                pos_hint: {"center_x": .5, "center_y": .4}
+
+<ListaBuscar>
+    ScrollView:
+        MDList:
+
+<BuscarDescargados>
+
+    BoxLayout:
+        orientation:'vertical'
+        spacing: dp(10)
+        padding: dp(10)
+        on_parent: root.mostrar_libros()
+        MDTextField:
+            id: search_field
+            pos_hint: {"center_x": .5, "center_y": .1}
+            size_hint_x: .9
+            mode: 'rectangle'
+            hint_text: 'Buscar libro por título o autor'
+            on_text: root.mostrar_libros(self.text, True)
+        ScreenManager:
+            id: sm_buscar
+            MDScreen:
+                name: 'buscar_descargados'
+                RecycleView:
+                    id: rv
+                    key_viewclass: 'viewclass'
+                    key_size: 'height'
+                    RecycleBoxLayout:
+                        padding: dp(10)
+                        default_size: None, dp(60)
+                        default_size_hint: 1, None
+                        size_hint_y: None
+                        height: self.minimum_height
+                        orientation: 'vertical'
+            MDScreen:
+                name: 'buscar_vacio'
+                MDLabel:
+                    text: '¡No tiene libros!'
+                    pos_hint: {"center_x": .5, "center_y": .75}
+                    color: 46/255, 49/255, 49/255, 0.95
+                    halign: 'center'
+                    font_size: 25
+                MDIcon:
+                    icon: 'emoticon-cry-outline'
+                    halign:'center'
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    font_size: "70sp"
+                    theme_text_color: "Custom"
+                    text_color: app.theme_cls.primary_color
+
+
+<ListaSugerencias>
+    text: root.texto
+
+
+
+<ElementCard>:
+    portada:''
+    titulo:''
+    url_html:''
+    descripcion: ''
+    orientation:'vertical'
+    size_hint_x:.5
+    elevation:15
+    size_hint_y:None
+    md_bg_color: 1,1,1,1
+    height:dp(200)
+    padding:dp(12)
+    spacing:dp(15)
+    radius:[25]
+    allow_stretch: True
+    on_release:app.pre_visualizacion(root.portada,root.titulo, root.descripcion, root.url_html)
+
+    MDBoxLayout:
+        height:dp(150)
+        size_hint_y:None
+        orientation: 'vertical'
+        allow_stretch: True
+        AsyncImage:
+            pos_hint:{'center_x': 0.5, 'center_y':0.5}
+            source: 'audiobook.png'
+
+        MDLabel:
+            font_size:14
+            pos_hint:{'center_x': 0.5, 'center_y':0.3}
+            text:root.titulo
+            halign: 'center'
+            max_lines: 3
+
+
+<LibrosPag>
+    BoxLayout:
+        orientation: 'vertical'
+        padding:dp(15)
+        spacing:dp(15)
+        MDTextField:
+            size_hint_x: .9
+            pos_hint: {"center_x": .5, "center_y": .5}
+            hint_text: 'Buscar por título, autor, o categoría'
+            on_text_validate: root.agregar_libros(self.text)
+        RecycleView:
+            id: rv_libros_pag
+            key_viewclass: 'viewclass'
+            key_size: 'height'
+            on_parent: root.agregar_libros()
+            RecycleGridLayout:
+                cols: 2
+                padding:dp(20)
+                spacing:dp(20)
+                default_size: None, dp(200)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                adaptive_height: True
+                allow_stretch: True
+                ScrollView:
+
+<ContentCustomSheet@MDBoxLayout>:
+    orientation: "vertical"
+    size_hint_y: None
+    height:dp(750)
+    portada:''
+    titulo:""
+    url_html:""
+    descripcion: ""
+    padding:dp(12)
+    spacing:dp(8)
+    RelativeLayout:
+        ElementCard:
+
+            pos_hint:{"x":.05,"y":.5}
+            portada:root.portada
+            titulo:root.titulo
+            url_html:root.url_html
+
+    ScrollView:
+        size_hint_y: None
+        height: dp(150)
+        pos_hint: {'center_x':0.5, 'center_y': 0.3}
+        MDLabel:
+            text: root.descripcion
+            padding: (dp(10), dp(10))
+            adaptive_height:True
+
+    MDRaisedButton:
+        pos_hint: {'center_x':0.5, 'center_y': 0.5}
+        size_hint_x:0.6
+        text:"Descargar"
+        font_size: 20
+        on_release: app.descargar_audio(root.titulo,root.descripcion, root.portada, root.url_html)
+
+
+<Archivo>
+    BoxLayout:
+        canvas:
+            Color:
+                rgba: 0,0,0,0.7
+            Rectangle:
+                size: self.size
+        orientation: 'vertical'
+        FileChooserListView:
+            on_selection: root.mostrar_ventana_advertencia(*args)
+
+
+
+
+MDScreen:
+    BoxLayout:
+        orientation: 'vertical'
+
+        MDToolbar:
+            id: toolbar
+            elevation: 10
+            md_bg_color: app.theme_cls.primary_color
+            left_action_items: [['menu', lambda x: nav_drawer.set_state("open")]]
+            right_action_items: [['book-open-page-variant-outline', lambda x: app.abrir_pag_leer()]]
+            size_hint_y: .08
+
+        MDNavigationLayout:
+            id: layout_principal
+            ScreenManager:
+                id: screen_manager
+
+                MDScreen:
+                    name: "inicio"
+                    MDTabs:
+                        id: tabs
+                        #on_tab_switch: app.on_tab_switch(*args)
+                        background_color: (1,1,1,1)
+                        Tab:
+                            title: 'Libreria'
+                            LibrosDescargados:
+                                id: libros_descargados
+
+                        Tab:
+                            title: 'Añadidos recientes'
+                            AgregadosRecientes:
+                                id: libros_recientes
+
+                        Tab:
+                            icon: "magnify"
+                            BuscarDescargados:
+                                id: libros_buscados
+
+
+                MDScreen:
+                    name: "archivos"
+                    MDSpinner:
+                        id: sp_archivo
+                        size_hint: (None, None)
+                        size: dp(46), dp(46)
+                        pos_hint: {'top':1}
+                        #pos_hint: {'center_x': .5, 'center_y': .5}
+                        active: False
+                    Archivo:
+                        id: archivos
+
+
+                MDScreen:
+                    name: "borrar"
+                    ScrollView:
+                        MDSelectionList:
+                            id: lista_borrar
+                            on_selected_mode: app.set_selection_mode(*args)
+
+                MDScreen:
+                    name: 'buscar'
+                    LibrosPag:
+
+
+                MDScreen:
+                    name: 'reproductor_audio'
+                    MDLabel:
+                        id: titulo_autor
+                        text: 'Título - Autor'
+                        pos_hint: {'center_x': 0.5, 'center_y':0.945}
+                        font_size: 18
+                        halign: 'center'
+                    AsyncImage:
+                        id: reproductor_imagen
+                        pos_hint: {'center_x':0.5, 'center_y':0.57}
+                        size_hint: (0.8,0.65)
+                        source: 'audiobook.png'
+                    Audio:
+                        id: audio
+
+
+            MDNavigationDrawer:
+                id: nav_drawer
+
+                ContentNavigationDrawer:
+                    id: content_drawer
+                    screen_manager: screen_manager
+                    nav_drawer: nav_drawer
+
+
+
+
+
+    
